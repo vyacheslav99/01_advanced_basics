@@ -1,2 +1,2 @@
-# poker
-Урок 01 advanced basics. ДЗ № 1, Покер.
+# 01 advanced basics
+Урок 01 advanced basics. ДЗ
