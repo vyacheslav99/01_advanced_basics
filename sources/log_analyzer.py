@@ -18,10 +18,11 @@ default_config = {
     "REPORT_SIZE": 1000,
     "REPORT_DIR": "./reports",
     "LOG_DIR": "./log",
-    'TS_DIR': tempfile.gettempdir()
+    'TS_DIR': tempfile.gettempdir(),
+    'LOGGING': False
 }
 
-def load_log(file_name):
+def create_report(rep_dir, log_dir, rep_sz):
     pass
 
 def main():
@@ -35,13 +36,13 @@ def main():
         with open(args.config, 'r') as f:
             cfg.update(json.load(f))
 
-    logging.basicConfig(filename=os.path.join(cfg['LOG_DIR'], 'log_analyzer.log') if cfg['LOG_DIR'] else None,
+    logging.basicConfig(filename=__file__.replace('.py', '.log') if cfg['LOGGING'] else None,
         level=logging.INFO, format='%(asctime)s %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
 
     logging.info('START')
-    # собсно парсим
 
-    # завершаем
+    create_report(cfg['REPORT_DIR'], cfg['LOG_DIR'], cfg['REPORT_SIZE'])
+
     with open(os.path.join(cfg['TS_DIR'], 'log_nalyzer.ts'), 'w') as f:
         f.write(datetime.datetime.now().timestamp())
 
