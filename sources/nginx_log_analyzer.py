@@ -68,7 +68,7 @@ class NginxLogAnalyzer:
 
     def _get_curren_log(self):
         """"
-        Анализ папки расположения анализируемых логов - находит и возвращает самый свежий из необработанных.
+        Просмотр папки расположения анализируемых логов - находит и возвращает самый свежий из необработанных.
         Вложенные папки не просматриваются.
         """
 
@@ -89,11 +89,11 @@ class NginxLogAnalyzer:
 
         return None
 
-    def _get_report_name(self, worked_file):
+    def _get_report_name(self, file_name):
         """ Генерит и возвращает имя отчета на основе имени обрабатываемого файла лога """
 
         log_dt = datetime.datetime.strptime(
-            os.path.splitext(os.path.split(worked_file)[1])[0].replace(self._log_file_name_tmpl, ''), '%Y%m%d')
+            os.path.splitext(os.path.split(file_name)[1])[0].replace(self._log_file_name_tmpl, ''), '%Y%m%d')
         return os.path.join(self._rep_dir, self._rep_file_name_tmpl.format(log_dt.year, log_dt.month, log_dt.day))
 
     def _decode_line(self, line):
@@ -166,9 +166,9 @@ class NginxLogAnalyzer:
             logging.error('Ошибка чтения файла {0}'.format(file_name))
             raise
 
-    def _analyze(self, worked_file):
+    def _analyze(self, file_name):
         """
-        Анализирует файл отчета worked_file.
+        Анализирует файл отчета file_name.
         returns: list. Таблица для рендера в шаблон отчета
         """
 
@@ -177,7 +177,7 @@ class NginxLogAnalyzer:
         sum_time = 0.0
         stat_data = {}
 
-        for row in self._read_log_file(worked_file):
+        for row in self._read_log_file(file_name):
             total_count += 1
             # пропустим строки, которые не распарсились
             if not row['request']: continue
@@ -204,7 +204,7 @@ class NginxLogAnalyzer:
                 }
 
         if sum_count > 0:
-            errors_prc = self._parse_errors / sum_count
+            errors_prc = self._parse_errors / float(sum_count)
         else:
             errors_prc = 0.0
 
@@ -263,7 +263,7 @@ class NginxLogAnalyzer:
         report_name = self._get_report_name(worked_file)
         logging.info('Будет сформирован отчет: {0}'.format(os.path.split(report_name)[1]))
 
-        # читаем файл лога, парсим и считаем общие показатели: общее число запросов, суммарное время всех запросов
+        # читаем файл лога, парсим и формируем массив статистики по запросам
         logging.info('Чтение и анализ лога...')
         table = self._analyze(worked_file)
         # None возвращает, когда порог ошибок разбора строк превысил допустимый уровень
