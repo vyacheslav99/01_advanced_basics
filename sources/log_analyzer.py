@@ -32,9 +32,8 @@ def main():
         with open(args.config, 'r') as f:
             cfg.update(json.load(f))
 
-    # todo: смени level на INFO
     logging.basicConfig(filename=os.path.join(cfg['LOGGING_DIR'],
-        os.path.split(__file__)[1].replace('.py', '.log')) if cfg['LOGGING_DIR'] else None, level=logging.DEBUG,
+        os.path.split(__file__)[1].replace('.py', '.log')) if cfg['LOGGING_DIR'] else None, level=logging.INFO,
         format='%(asctime)s %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
 
     logging.info('START')
