@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__author__: 'balychkov'
+__author__ = 'balychkov'
 
 import os
 import gzip
@@ -8,12 +8,12 @@ import logging
 import json
 import shlex
 import datetime
-import statistics
+import array
 
 
 class NginxLogAnalyzer:
 
-    _rep_tmpl_file = './report.html'
+    _rep_tmpl_file = os.path.join(os.path.dirname(__file__), 'report.html')
     _log_file_name_tmpl = 'nginx-access-ui.log-'
     _rep_file_name_tmpl = 'report-{0}.{1:02d}.{2:02d}.html'
     _log_columns = ('remote_addr', 'remote_user', 'http_x_real_ip', 'time_local', 'request', 'status',
@@ -29,6 +29,32 @@ class NginxLogAnalyzer:
         self._max_parse_errors = max_parse_errors
         self._history = []
         self._load_history()
+
+    def __median(self, sequence):
+        """
+        Вычисляет медиану.
+
+        Для Python 2.7 - самописный метод, т.к. в нем нет стандартной бибилиотеки, содержащей функцию вычисления медианы,
+        а по условию Д.З. нельзя использовать сторонние библиотеки.
+
+        Для Python > 3 - использую метод из стандартной библиотеки
+
+        :param sequence - лююбой тип последовательности
+        :returns средний элемент последовательности sequence
+        """
+
+        try:
+            import statistics
+            return statistics.median(sequence)
+        except:
+            sorted_seq = sorted(sequence)
+            seq_len = len(sequence) # чтоб не вычислять каждый раз
+            n = int((seq_len - 1) / 2)
+
+            if seq_len % 2 == 0:
+                return (sorted_seq[n] + sorted_seq[n + 1]) / 2
+            else:
+                return sorted_seq[n]
 
     def _load_history(self):
         """ загружает историю по уже сформированным отчетам """
@@ -164,8 +190,7 @@ class NginxLogAnalyzer:
                 stat_data[row['request']]['time_avg'] = stat_data[row['request']]['time_sum'] / stat_data[
                     row['request']]['count']
                 stat_data[row['request']]['time_max'] = max(stat_data[row['request']]['time_max'], row['request_time'])
-                stat_data[row['request']]['time_med'] = statistics.median((stat_data[row['request']]['time_med'],
-                    row['request_time']))
+                stat_data[row['request']]['time_med'].append(row['request_time'])
             else:
                 stat_data[row['request']] = {
                     'url': row['request'],
@@ -175,7 +200,7 @@ class NginxLogAnalyzer:
                     'time_perc': 0.0,
                     'time_avg': row['request_time'],
                     'time_max': row['request_time'],
-                    'time_med': row['request_time']
+                    'time_med': array.array('d', (row['request_time'],))
                 }
 
         if sum_count > 0:
@@ -193,11 +218,11 @@ class NginxLogAnalyzer:
         # теперь нужно посчитать суммарные данные и поокруглять все float-ы
         logging.info('Подготовка данных отчета...')
         for key in stat_data:
-            stat_data[key]['count_perc'] = round((stat_data[key]['count'] / sum_count) * 100.0, 3)
+            stat_data[key]['count_perc'] = round((stat_data[key]['count'] / float(sum_count)) * 100.0, 3)
             stat_data[key]['time_perc'] = round((stat_data[key]['time_sum'] / sum_time) * 100.0, 3)
             stat_data[key]['time_sum'] = round(stat_data[key]['time_sum'], 3)
             stat_data[key]['time_avg'] = round(stat_data[key]['time_avg'], 3)
-            stat_data[key]['time_med'] = round(stat_data[key]['time_med'], 3)
+            stat_data[key]['time_med'] = round(self.__median(stat_data[key]['time_med']), 3)
 
         # подготовка таблицы для внесения в отчет: сортируем массив по убыванию time_sum, обрезаем до заданной длины
         table = sorted([stat_data[key] for key in stat_data], key=lambda e: e['time_sum'], reverse=True)[:self._rep_sz]

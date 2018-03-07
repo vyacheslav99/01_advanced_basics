@@ -1,0 +1,5 @@
+{
+    "REPORT_DIR": "../tests",
+    "LOG_DIR": "../tests",
+    "LOGGING_DIR": "../tests"
+}

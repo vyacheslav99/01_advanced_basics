@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-__author__: 'balychkov'
+__author__ = 'balychkov'
 
 import os
 import tempfile
 import argparse
 import logging
 import json
-import datetime
+import datetime, time
 
 from nginx_log_analyzer import NginxLogAnalyzer
 
@@ -34,7 +34,7 @@ def main():
 
     # todo: смени level на INFO
     logging.basicConfig(filename=os.path.join(cfg['LOGGING_DIR'],
-        __file__.replace('.py', '.log')) if cfg['LOGGING_DIR'] else None, level=logging.DEBUG,
+        os.path.split(__file__)[1].replace('.py', '.log')) if cfg['LOGGING_DIR'] else None, level=logging.DEBUG,
         format='%(asctime)s %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
 
     logging.info('START')
@@ -44,11 +44,12 @@ def main():
         inst.create_report()
 
         with open(os.path.join(cfg['TS_DIR'], 'log_nalyzer.ts'), 'w') as f:
-            f.write(str(datetime.datetime.now().timestamp()))
+            f.write(str(time.mktime(datetime.datetime.now().timetuple())))
     except:
         logging.exception('Ошибка!')
 
     logging.info('DONE')
+    logging.info('---------------------------------------------------------------------------------------------\n')
 
 
 if __name__ == "__main__":
