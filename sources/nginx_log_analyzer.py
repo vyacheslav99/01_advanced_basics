@@ -144,7 +144,8 @@ class NginxLogAnalyzer:
         return: file-like объект
         """
 
-        if os.path.splitext(file_name)[1] == '.gz':
+        #if os.path.splitext(file_name)[1] == '.gz':
+        if file_name.endswith('.gz'):
             return gzip.open(file_name, 'r')
         else:
             return open(file_name, 'r')
