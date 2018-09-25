@@ -1,2 +1,2 @@
-# 01 advanced basics
-Урок 01 advanced basics. ДЗ
+﻿# 01 advanced basics
+Скрипт анализа access-логов сервера nginx
