@@ -61,8 +61,8 @@ class NginxLogAnalyzer:
 
         try:
             for fn in os.listdir(self._rep_dir):
-                self._history.append(self._log_file_name_tmpl + os.path.splitext(fn)[0].replace(
-                    'report-', '').replace('.', ''))
+                self._history.append('{0}{1}'.format(self._log_file_name_tmpl, os.path.splitext(fn)[0].replace(
+                    'report-', '').replace('.', '')))
         except:
             logging.exception('Не удалось получить историю обработки логов!')
 
